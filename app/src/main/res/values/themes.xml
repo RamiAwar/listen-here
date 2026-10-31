@@ -1,0 +1,13 @@
+<resources>
+    <!-- Floating centred card; the card draws its own background. -->
+    <style name="Theme.Capture" parent="android:Theme.DeviceDefault.Dialog.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.45</item>
+        <item name="android:windowMinWidthMajor">0dp</item>
+        <item name="android:windowMinWidthMinor">0dp</item>
+    </style>
+    <style name="Theme.Settings" parent="android:Theme.DeviceDefault.Light" />
+</resources>

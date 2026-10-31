@@ -1,0 +1,9 @@
+.gradle/
+build/
+.cxx/
+local.properties
+*.iml
+.idea/
+# Fetched by scripts/fetch-whistle.sh
+app/src/main/cpp/needle/
+app/src/main/assets/whistle.cact

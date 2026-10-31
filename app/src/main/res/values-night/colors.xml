@@ -1,0 +1,11 @@
+<resources>
+    <color name="card">#1C1D23</color>
+    <color name="surface_variant">#2B2D35</color>
+    <color name="text_primary">#F1F2F6</color>
+    <color name="text_secondary">#9A9DA8</color>
+    <color name="accent">#8C7EFF</color>
+    <color name="accent_end">#4FD3EC</color>
+    <color name="on_accent">#FFFFFF</color>
+    <color name="chip_bg">#338C7EFF</color>
+    <color name="chip_text">#C3BAFF</color>
+</resources>
