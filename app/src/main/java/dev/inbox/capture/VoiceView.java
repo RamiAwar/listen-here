@@ -103,7 +103,7 @@ public class VoiceView extends View {
     }
 
     private float radius() {
-        return Math.min(getWidth(), getHeight()) * 0.34f;
+        return Math.min(Math.min(getWidth(), getHeight()) * 0.34f, 36 * dp); // the bars get the height, not the ring
     }
 
     @Override
@@ -142,7 +142,7 @@ public class VoiceView extends View {
             float goal = 0;
             if (mode == Mode.LISTENING) {
                 float wobble = (float) (0.55 + 0.45 * Math.sin(t * (4.0 + (i % 5) * 0.9) + i * 1.7));
-                goal = (0.14f + 0.86f * level) * wobble * envelope * 0.6f; // a gentle sway shows it's listening
+                goal = (0.1f + 0.9f * level) * wobble * envelope; // a gentle sway shows it's listening
             }
             shown[i] += (goal - shown[i]) * 0.35f;
             if (Math.abs(goal - shown[i]) > 0.003f) settling = true;
