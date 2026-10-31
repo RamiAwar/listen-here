@@ -18,6 +18,18 @@ public final class TaskFormatter {
 
     private TaskFormatter() {}
 
+    /**
+     * Task text is never markup: backticks (code, Dataview inline JS), HTML (remote images) and
+     * markdown images (remote fetches when the note is rendered) are escaped. Dictation never
+     * produces these; shared text from other apps might.
+     */
+    static String escape(String title) {
+        return title.replace("\\", "\\\\")
+                .replace("`", "\\`")
+                .replace("<", "\\<")
+                .replace("![", "!\\[");
+    }
+
     public static String format(TaskParser.Task task, String line, String due, String dueTime, LocalDate today) {
         String dueText = "";
         if (task.date != null) {
@@ -29,7 +41,7 @@ public final class TaskFormatter {
                 .replace("{date}", task.date != null ? task.date.toString() : "")
                 .replace("{time}", task.time != null ? task.time.format(TIME) : "")
                 .replace("{today}", today.toString())
-                .replace("{task}", task.title)
+                .replace("{task}", escape(task.title))
                 .replaceAll("\\s+$", "");
     }
 }

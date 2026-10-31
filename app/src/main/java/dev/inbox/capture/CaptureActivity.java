@@ -25,6 +25,11 @@ import java.util.Locale;
 /** The whole app, from the user's point of view: listen, show the line, append it to the inbox. */
 public class CaptureActivity extends Activity {
 
+    /** Launcher shortcut. Settings itself isn't exported, so this is the only way in from outside. */
+    static final String ACTION_SETTINGS = "dev.inbox.capture.SETTINGS";
+    /** Shared text: enough for a handful of tasks, small enough that nothing hides behind "+N more". */
+    static final int MAX_SHARED_LINES = 10;
+    static final int MAX_SHARED_CHARS = 2000;
     private static final int REQ_MIC = 1;
     private static final int REQ_NOTIFY = 2;
 
@@ -107,14 +112,33 @@ public class CaptureActivity extends Activity {
     }
 
     private void start(Intent intent) {
+        if (ACTION_SETTINGS.equals(intent.getAction())) {
+            if (!keyguard.isKeyguardLocked()) startActivity(new Intent(this, SettingsActivity.class));
+            finish();
+            return;
+        }
         String shared = Intent.ACTION_SEND.equals(intent.getAction())
                 ? intent.getStringExtra(Intent.EXTRA_TEXT) : null;
         if (shared != null) {
-            setText(shared.trim());
+            setText(limitShared(shared));
             hideWave(() -> reveal(true));
         } else if (prefs.autoMic()) {
             listen();
         }
+    }
+
+    /** Shared text comes from other apps: cap its size so a huge paste can't slip extra tasks in. */
+    static String limitShared(String shared) {
+        String t = shared.length() > MAX_SHARED_CHARS ? shared.substring(0, MAX_SHARED_CHARS) : shared;
+        StringBuilder out = new StringBuilder();
+        int lines = 0;
+        for (String line : t.split("\\R")) {
+            if (line.isBlank()) continue;
+            if (lines++ == MAX_SHARED_LINES) break;
+            if (out.length() > 0) out.append('\n');
+            out.append(line.trim());
+        }
+        return out.toString();
     }
 
     /** Parses what was said into the result screen's title and date; reveal() shows them. */

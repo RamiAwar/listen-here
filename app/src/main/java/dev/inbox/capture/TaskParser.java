@@ -33,14 +33,17 @@ public final class TaskParser {
             "(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?"
                     + "|sept?(?:ember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)";
     private static final String NUM =
-            "(\\d+|an?|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|a couple of|couple of|a few|few)";
+            "(\\d{1,4}|an?|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|a couple of|couple of|a few|few)";
     // Words that only exist to introduce a date ("due friday", "by tomorrow"); swallowed with it.
     private static final String LEAD = "(?:\\b(?:on|by|before|due|for|until|this coming)\\s+)?";
     private static final String ORD = "(?:st|nd|rd|th)?";
     private static final String AMPM = "(a\\.?\\s?m\\.?|p\\.?\\s?m\\.?)";
 
+    // Interjections are stripped one at a time in a loop: a repeated regex group recurses per
+    // repetition in java.util.regex, and "um um um…" a few thousand times overflowed the stack.
+    private static final Pattern INTERJECTION = Pattern.compile("^(?:hey|ok|okay|so|um+|uh+)\\b[\\s,]*", F);
     private static final Pattern FILLER = Pattern.compile(
-            "^(?:(?:hey|ok|okay|so|um+|uh+)\\b[\\s,]*)*(?:please\\s+)?"
+            "^(?:please\\s+)?"
                     + "(?:remind me (?:to|that|about)|i need to|i have to|i've got to|i gotta|i must|"
                     // "at the task" / "ad a task" are how dictation tends to mishear "add a task".
                     + "don'?t forget to|remember to|(?:add|ad|at)(?: (?:a|an|the))?(?: new)? (?:task|to-?do|reminder)(?: (?:to|for|that))?|"
@@ -118,14 +121,27 @@ public final class TaskParser {
         this.now = now;
     }
 
+    /** A task is a sentence; anything longer is cut, which also bounds the regex work. */
+    static final int MAX_LENGTH = 300;
+
     public static Task parse(String input, LocalDateTime now) {
-        TaskParser p = new TaskParser(input == null ? "" : input, now);
-        p.run();
-        return new Task(p.title(), p.date, p.time);
+        String in = input == null ? "" : input.length() > MAX_LENGTH ? input.substring(0, MAX_LENGTH) : input;
+        TaskParser p = new TaskParser(in, now);
+        try {
+            p.run();
+            return new Task(p.title(), p.date, p.time);
+        } catch (RuntimeException e) {
+            // Never lose what was said over a parsing bug: keep it as the title, undated.
+            return new Task(in.replaceAll("\\s+", " ").trim(), null, null);
+        }
     }
 
     private void run() {
-        s = " " + FILLER.matcher(normalizeNumbers(s).trim()).replaceFirst("") + " ";
+        String spoken = normalizeNumbers(s).trim();
+        for (Matcher m = INTERJECTION.matcher(spoken); m.lookingAt(); m = INTERJECTION.matcher(spoken)) {
+            spoken = spoken.substring(m.end());
+        }
+        s = " " + FILLER.matcher(spoken).replaceFirst("") + " ";
         LocalDate today = now.toLocalDate();
 
         Matcher m;

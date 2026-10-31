@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.channels.FileChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,9 +55,8 @@ final class Whistle {
         ENGINE.execute(() -> {
             try {
                 ensureLoaded(app);
-                String json = nativeTranscribe(pcm, samples, language, keywords);
-                android.util.Log.i("Inbox", "whistle: " + json);
-                String text = new JSONObject(json).optString("text", "").trim();
+                byte[] json = nativeTranscribe(pcm, samples, language, keywords);
+                String text = new JSONObject(new String(json, StandardCharsets.UTF_8)).optString("text", "").trim();
                 MAIN.post(() -> cb.onText(text));
             } catch (Exception e) {
                 MAIN.post(() -> cb.onError(String.valueOf(e.getMessage())));
@@ -78,5 +78,6 @@ final class Whistle {
 
     private static native String nativeLoad(java.nio.ByteBuffer model);
 
-    private static native String nativeTranscribe(float[] pcm, int samples, String language, String keywords);
+    /** Raw UTF-8 bytes: JNI's NewStringUTF aborts the process on 4-byte characters such as emoji. */
+    private static native byte[] nativeTranscribe(float[] pcm, int samples, String language, String keywords);
 }

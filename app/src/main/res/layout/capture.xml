@@ -14,6 +14,7 @@
         android:background="@drawable/card_bg"
         android:clickable="true"
         android:elevation="12dp"
+        android:filterTouchesWhenObscured="true"
         android:focusable="true"
         android:padding="24dp">
 
@@ -64,6 +65,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/pill_bg"
+                android:filterTouchesWhenObscured="true"
                 android:fontFamily="sans-serif-medium"
                 android:paddingStart="22dp"
                 android:paddingTop="8dp"

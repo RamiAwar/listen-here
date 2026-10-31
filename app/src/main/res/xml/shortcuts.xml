@@ -5,8 +5,8 @@
         android:shortcutId="settings"
         android:shortcutShortLabel="@string/settings">
         <intent
-            android:action="android.intent.action.VIEW"
-            android:targetClass="dev.inbox.capture.SettingsActivity"
+            android:action="dev.inbox.capture.SETTINGS"
+            android:targetClass="dev.inbox.capture.CaptureActivity"
             android:targetPackage="dev.inbox.capture" />
     </shortcut>
 </shortcuts>

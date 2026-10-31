@@ -121,8 +121,6 @@ final class SpeechRecorder {
         int samples = n + TAIL_PAD; // the buffer is zeroed, so the tail is already silence
         boolean heardSpeech = heard;
         float gain = normalize(all, samples);
-        android.util.Log.i("Inbox", "recorded " + samples + " samples, heard=" + heard + " noise=" + noise
-                + " peakRms=" + peakRms + " gain=" + gain + " stopRequested=" + stopRequested);
         main.post(() -> l.onDone(all, samples, heardSpeech));
     }
 
