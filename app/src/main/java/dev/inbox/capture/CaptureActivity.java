@@ -103,6 +103,7 @@ public class CaptureActivity extends Activity {
         String shared = Intent.ACTION_SEND.equals(intent.getAction())
                 ? intent.getStringExtra(Intent.EXTRA_TEXT) : null;
         if (shared != null) {
+            hideWave();
             setText(shared.trim());
         } else if (prefs.autoMic()) {
             listen();
@@ -128,7 +129,7 @@ public class CaptureActivity extends Activity {
             due.setText(first.date == null ? "" : dueLabel(first));
             due.setVisibility(first.date == null ? View.GONE : View.VISIBLE);
         }
-        saveButton.setVisibility(text.isEmpty() || prefs.autoSave() ? View.GONE : View.VISIBLE);
+        saveButton.setVisibility(text.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
     /** "Today · 15:00", "Tomorrow", "Fri", "5 Nov · 09:30". */
@@ -144,12 +145,21 @@ public class CaptureActivity extends Activity {
     }
 
     /** Shows the outcome in the card for a moment, then closes. */
+    /** End screen: just the result and a caption, long enough to read. Tap to close sooner. */
     private void done(int message) {
-        card.setEnabled(false);
+        card.setOnClickListener(v -> finish());
+        card.setOnLongClickListener(null);
         saveButton.setVisibility(View.GONE);
-        wave.setMode(VoiceView.Mode.DONE);
+        hideWave();
         setStatus(getString(message));
-        status.postDelayed(this::finish, 1100);
+        status.postDelayed(this::finish, 3300);
+    }
+
+    /** The dots shrink away and leave the layout, so the text below is centred in the card. */
+    private void hideWave() {
+        wave.setMode(VoiceView.Mode.DONE);
+        wave.animate().alpha(0).scaleX(0.6f).scaleY(0.6f).setDuration(250)
+                .withEndAction(() -> wave.setVisibility(View.GONE));
     }
 
     private void listen() {
@@ -158,6 +168,11 @@ public class CaptureActivity extends Activity {
             return;
         }
         if (recorder.isRecording()) return;
+        wave.animate().cancel();
+        wave.setVisibility(View.VISIBLE);
+        wave.setAlpha(1);
+        wave.setScaleX(1);
+        wave.setScaleY(1);
         wave.setMode(VoiceView.Mode.LISTENING);
         setStatus(null); // the bars say it
         recorder.start(new SpeechRecorder.Listener() {
@@ -206,7 +221,7 @@ public class CaptureActivity extends Activity {
             return;
         }
         setStatus(null);
-        wave.setMode(VoiceView.Mode.DONE); // dots come to rest under the result
+        hideWave();
         setText(text.isEmpty() ? heard : text + " " + heard);
         if (prefs.autoSave()) save();
     }
