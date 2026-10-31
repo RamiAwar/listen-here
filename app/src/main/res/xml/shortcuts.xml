@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:icon="@drawable/ic_settings"
+        android:shortcutId="settings"
+        android:shortcutShortLabel="@string/settings">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="dev.inbox.capture.SettingsActivity"
+            android:targetPackage="dev.inbox.capture" />
+    </shortcut>
+</shortcuts>

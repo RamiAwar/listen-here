@@ -2,14 +2,12 @@
     <string name="app_name">Inbox</string>
     <string name="tile_label">Capture task</string>
     <string name="settings">Inbox settings</string>
-    <string name="speak_prompt">Task for your inbox</string>
     <string name="save">Save</string>
-    <string name="mic">Dictate</string>
     <string name="saved">Added to inbox</string>
     <string name="save_failed">Couldn\'t save: %1$s</string>
     <string name="setup_first">Point the app at your vault first</string>
-    <string name="no_words">Heard you, but couldn\'t make out words. Tap the mic to retry.</string>
-    <string name="heard_nothing">Didn\'t catch that. Tap the mic to try again.</string>
+    <string name="no_words">Couldn\'t make out words. Tap to try again.</string>
+    <string name="heard_nothing">Didn\'t catch that. Tap to try again.</string>
     <string name="speech_failed">Speech failed: %1$s</string>
     <string name="queued">Saved · files after unlock</string>
     <string name="pending_channel">Tasks waiting for Obsidian</string>

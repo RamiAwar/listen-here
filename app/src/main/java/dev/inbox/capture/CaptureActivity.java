@@ -31,8 +31,7 @@ public class CaptureActivity extends Activity {
     private TextView status;
     private TextView title;
     private TextView due;
-    private View mic;
-    private View settings;
+    private View card;
     private View saveButton;
     private KeyguardManager keyguard;
     private final SpeechRecorder recorder = new SpeechRecorder();
@@ -56,17 +55,20 @@ public class CaptureActivity extends Activity {
         status = findViewById(R.id.status);
         title = findViewById(R.id.title);
         due = findViewById(R.id.due);
-        mic = findViewById(R.id.mic);
-        settings = findViewById(R.id.settings);
+        card = findViewById(R.id.card);
         keyguard = getSystemService(KeyguardManager.class);
-        mic.setOnClickListener(v -> {
+        // No buttons: tap the card to stop early or listen again, long-press for settings.
+        card.setOnClickListener(v -> {
             if (recorder.isRecording()) recorder.stop();
             else listen();
         });
+        card.setOnLongClickListener(v -> {
+            if (keyguard.isKeyguardLocked()) return false; // over the lock screen: capture only
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
+        });
         saveButton = findViewById(R.id.save);
         saveButton.setOnClickListener(v -> save());
-        settings.setOnClickListener(v ->
-                startActivity(new Intent(this, SettingsActivity.class)));
 
         Whistle.preload(this);
         if (state == null) start(getIntent());
@@ -89,8 +91,6 @@ public class CaptureActivity extends Activity {
             prefs.sp.edit().putBoolean("asked_notifications", true).apply();
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQ_NOTIFY);
         }
-        // Over the lock screen you can add to the inbox, nothing else.
-        settings.setVisibility(keyguard.isKeyguardLocked() ? View.INVISIBLE : View.VISIBLE); // keeps the mic centred
     }
 
     @Override
@@ -128,7 +128,7 @@ public class CaptureActivity extends Activity {
             due.setText(first.date == null ? "" : dueLabel(first));
             due.setVisibility(first.date == null ? View.GONE : View.VISIBLE);
         }
-        saveButton.setVisibility(text.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+        saveButton.setVisibility(text.isEmpty() || prefs.autoSave() ? View.GONE : View.VISIBLE);
     }
 
     /** "Today · 15:00", "Tomorrow", "Fri", "5 Nov · 09:30". */
@@ -145,8 +145,8 @@ public class CaptureActivity extends Activity {
 
     /** Shows the outcome in the card for a moment, then closes. */
     private void done(int message) {
-        mic.setEnabled(false);
-        saveButton.setVisibility(View.INVISIBLE);
+        card.setEnabled(false);
+        saveButton.setVisibility(View.GONE);
         wave.setMode(VoiceView.Mode.DONE);
         status.setText(message);
         status.postDelayed(this::finish, 1100);
@@ -158,7 +158,6 @@ public class CaptureActivity extends Activity {
             return;
         }
         if (recorder.isRecording()) return;
-        mic.setActivated(true);
         wave.setMode(VoiceView.Mode.LISTENING);
         status.setText(""); // the bars say it
         recorder.start(new SpeechRecorder.Listener() {
@@ -169,7 +168,7 @@ public class CaptureActivity extends Activity {
 
             @Override
             public void onDone(float[] pcm, int samples, boolean heardSpeech) {
-                resetMic();
+                showIdle();
                 if (!heardSpeech || isFinishing()) {
                     status.setText(R.string.heard_nothing);
                     return;
@@ -194,7 +193,7 @@ public class CaptureActivity extends Activity {
 
             @Override
             public void onError(String message) {
-                resetMic();
+                showIdle();
                 status.setText(getString(R.string.speech_failed, message));
             }
         });
@@ -211,8 +210,7 @@ public class CaptureActivity extends Activity {
         if (prefs.autoSave()) save();
     }
 
-    private void resetMic() {
-        mic.setActivated(false);
+    private void showIdle() {
         if (!isFinishing()) wave.setMode(VoiceView.Mode.IDLE);
     }
 
