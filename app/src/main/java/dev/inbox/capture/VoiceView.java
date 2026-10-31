@@ -9,7 +9,7 @@ import android.view.View;
 
 /**
  * The capture card's only visual: a row of bars.
- * Listening, they rise and fall with your voice; thinking, a slow wave rolls across them;
+ * Listening, they rise and fall with your voice; thinking, they hand over to three hopping dots;
  * otherwise they rest as dots.
  */
 public class VoiceView extends View {
@@ -23,6 +23,7 @@ public class VoiceView extends View {
     private Mode mode = Mode.IDLE;
     private float targetLevel;
     private float level;
+    private float dotsMix; // 0 = bars, 1 = the three thinking dots
 
     public VoiceView(Context c, AttributeSet attrs) {
         super(c, attrs);
@@ -51,7 +52,10 @@ public class VoiceView extends View {
         // Rise quickly with the voice, fall back gently.
         level += (targetLevel - level) * (targetLevel > level ? 0.45f : 0.12f);
 
-        boolean moving = mode == Mode.LISTENING || mode == Mode.THINKING;
+        boolean thinking = mode == Mode.THINKING;
+        dotsMix += ((thinking ? 1 : 0) - dotsMix) * 0.15f;
+        boolean moving = mode == Mode.LISTENING || thinking || Math.abs((thinking ? 1 : 0) - dotsMix) > 0.005f;
+        paint.setAlpha((int) (255 * (1 - dotsMix)));
         for (int i = 0; i < BARS; i++) {
             // Middle bars reach highest, so the row reads as one shape.
             float envelope = (float) Math.pow(Math.sin(Math.PI * (i + 0.5) / BARS), 0.8);
@@ -59,8 +63,6 @@ public class VoiceView extends View {
             if (mode == Mode.LISTENING) {
                 float wobble = (float) (0.55 + 0.45 * Math.sin(t * (4.0 + (i % 5) * 0.9) + i * 1.7));
                 goal = (0.1f + 0.9f * level) * wobble * envelope;
-            } else if (mode == Mode.THINKING) {
-                goal = (float) (0.06 + 0.16 * Math.max(0, Math.sin(t * 5 - i * 0.5))) * envelope;
             }
             shown[i] += (goal - shown[i]) * 0.3f;
             if (Math.abs(goal - shown[i]) > 0.003f) moving = true;
@@ -68,6 +70,17 @@ public class VoiceView extends View {
             float x = i * slot + (slot - bar) / 2f;
             canvas.drawRoundRect(x, cy - bh / 2f, x + bar, cy + bh / 2f, bar / 2f, bar / 2f, paint);
         }
+        if (dotsMix > 0.01f) drawDots(canvas, t, bar * 2.2f);
         if (moving) postInvalidateOnAnimation();
+    }
+
+    /** Three dots hopping one after another, like a "typing…" indicator. */
+    private void drawDots(Canvas canvas, double t, float size) {
+        float cx = getWidth() / 2f, cy = getHeight() / 2f;
+        paint.setAlpha((int) (255 * dotsMix));
+        for (int i = 0; i < 3; i++) {
+            float hop = (float) Math.max(0, Math.sin(t * 6 - i * 0.9)) * size * 1.2f;
+            canvas.drawCircle(cx + (i - 1) * size * 2.2f, cy - hop, size / 2f, paint);
+        }
     }
 }
