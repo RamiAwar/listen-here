@@ -197,7 +197,8 @@ public class CaptureActivity extends Activity {
     private void done() {
         card.setOnClickListener(v -> finish());
         card.setOnLongClickListener(null);
-        saveButton.setVisibility(View.INVISIBLE); // keeps the text where it is
+        // A Save that was showing keeps its space so the text doesn't move; otherwise it takes none.
+        if (saveButton.getVisibility() == View.VISIBLE) saveButton.setVisibility(View.INVISIBLE);
         setStatus(null);
         status.postDelayed(this::finish, 4000);
     }
