@@ -5,7 +5,11 @@ import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -27,6 +31,9 @@ public class CaptureActivity extends Activity {
     private Prefs prefs;
     /** What was said (or shared) so far; dictating again adds to it. */
     private String text = "";
+    private String titleText; // what the result screen types out
+    private String dueText;
+    private int revealGen; // bumps to cancel a reveal still typing
     private VoiceView wave;
     private TextView status;
     private TextView title;
@@ -103,13 +110,14 @@ public class CaptureActivity extends Activity {
         String shared = Intent.ACTION_SEND.equals(intent.getAction())
                 ? intent.getStringExtra(Intent.EXTRA_TEXT) : null;
         if (shared != null) {
-            hideWave();
             setText(shared.trim());
+            hideWave(() -> reveal(true));
         } else if (prefs.autoMic()) {
             listen();
         }
     }
 
+    /** Parses what was said into the result screen's title and date; reveal() shows them. */
     private void setText(String t) {
         text = t;
         TaskParser.Task first = null;
@@ -120,16 +128,56 @@ public class CaptureActivity extends Activity {
             if (first == null) first = task;
             count++;
         }
-        if (first == null) {
-            title.setVisibility(View.GONE);
-            due.setVisibility(View.GONE);
-        } else {
-            title.setText(count > 1 ? getString(R.string.title_more, first.title, count - 1) : first.title);
-            title.setVisibility(View.VISIBLE);
-            due.setText(first.date == null ? "" : dueLabel(first));
-            due.setVisibility(first.date == null ? View.GONE : View.VISIBLE);
+        titleText = first == null ? null
+                : count > 1 ? getString(R.string.title_more, first.title, count - 1) : first.title;
+        dueText = first == null || first.date == null ? null : dueLabel(first);
+    }
+
+    /** Types the title out quickly, then pops in the date (and Save when asked). Layout is final from the start. */
+    private void reveal(boolean withSave) {
+        if (titleText == null) return;
+        int gen = ++revealGen;
+        String full = titleText;
+        int n = full.length();
+        long step = Math.max(6, Math.min(20, 350 / Math.max(1, n)));
+        title.setText(typed(full, 0));
+        title.setVisibility(View.VISIBLE);
+        for (int i = 1; i <= n; i++) {
+            int k = i;
+            title.postDelayed(() -> {
+                if (gen == revealGen) title.setText(typed(full, k));
+            }, i * step);
         }
-        saveButton.setVisibility(text.isEmpty() ? View.GONE : View.VISIBLE);
+        long after = n * step + 60;
+        if (dueText != null) {
+            due.setText(dueText);
+            popIn(due, after);
+        }
+        if (withSave) popIn(saveButton, after + 80);
+    }
+
+    /** The whole string is laid out, the untyped part transparent, so centring never shifts. */
+    private static CharSequence typed(String s, int shown) {
+        SpannableString out = new SpannableString(s);
+        if (shown < s.length()) {
+            out.setSpan(new ForegroundColorSpan(Color.TRANSPARENT), shown, s.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        return out;
+    }
+
+    private static void popIn(View v, long delay) {
+        v.setAlpha(0);
+        v.setScaleX(0.9f);
+        v.setScaleY(0.9f);
+        v.setVisibility(View.VISIBLE);
+        v.animate().alpha(1).scaleX(1).scaleY(1).setStartDelay(delay).setDuration(180);
+    }
+
+    private void hideResult() {
+        revealGen++;
+        title.setVisibility(View.GONE);
+        due.setVisibility(View.GONE);
+        saveButton.setVisibility(View.GONE);
     }
 
     /** "Today · 15:00", "Tomorrow", "Fri", "5 Nov · 09:30". */
@@ -149,17 +197,18 @@ public class CaptureActivity extends Activity {
     private void done() {
         card.setOnClickListener(v -> finish());
         card.setOnLongClickListener(null);
-        saveButton.setVisibility(View.GONE);
-        hideWave();
+        saveButton.setVisibility(View.INVISIBLE); // keeps the text where it is
         setStatus(null);
-        status.postDelayed(this::finish, 3300);
+        status.postDelayed(this::finish, 4000);
     }
 
-    /** The dots shrink away and leave the layout, so the text below is centred in the card. */
-    private void hideWave() {
+    /** The dots fade out; a beat later, {@code then} runs. */
+    private void hideWave(Runnable then) {
         wave.setMode(VoiceView.Mode.DONE);
-        wave.animate().alpha(0).scaleX(0.6f).scaleY(0.6f).setDuration(250)
-                .withEndAction(() -> wave.setVisibility(View.GONE));
+        wave.animate().alpha(0).setDuration(200).withEndAction(() -> {
+            wave.setVisibility(View.INVISIBLE);
+            wave.postDelayed(then, 50);
+        });
     }
 
     private void listen() {
@@ -168,11 +217,10 @@ public class CaptureActivity extends Activity {
             return;
         }
         if (recorder.isRecording()) return;
+        hideResult();
         wave.animate().cancel();
         wave.setVisibility(View.VISIBLE);
         wave.setAlpha(1);
-        wave.setScaleX(1);
-        wave.setScaleY(1);
         wave.setMode(VoiceView.Mode.IDLE); // bars come up once the mic is actually live
         setStatus(null); // the bars say it
         recorder.start(new SpeechRecorder.Listener() {
@@ -226,9 +274,10 @@ public class CaptureActivity extends Activity {
             return;
         }
         setStatus(null);
-        hideWave();
         setText(text.isEmpty() ? heard : text + " " + heard);
-        if (prefs.autoSave()) save();
+        boolean auto = prefs.autoSave();
+        hideWave(() -> reveal(!auto));
+        if (auto) save();
     }
 
     /** Hidden when empty, so the card's contents stay truly centred. */

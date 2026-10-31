@@ -5,8 +5,9 @@
     android:layout_height="wrap_content"
     android:padding="16dp">
 
-    <!-- Tap: stop early / listen again. Long-press: settings. -->
-    <LinearLayout
+    <!-- Tap: stop early / listen again. Long-press: settings.
+         The visual and the result share the centre, so nothing shifts when one replaces the other. -->
+    <FrameLayout
         android:id="@+id/card"
         android:layout_width="280dp"
         android:layout_height="280dp"
@@ -14,69 +15,75 @@
         android:clickable="true"
         android:elevation="12dp"
         android:focusable="true"
-        android:gravity="center"
-        android:orientation="vertical"
         android:padding="24dp">
 
         <dev.inbox.capture.VoiceView
             android:id="@+id/wave"
             android:layout_width="180dp"
             android:layout_height="150dp"
-            android:layout_marginBottom="6dp" />
+            android:layout_gravity="center" />
 
-
-        <TextView
-            android:id="@+id/title"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:fontFamily="sans-serif-medium"
-            android:gravity="center"
-            android:maxLines="2"
-            android:textColor="@color/text_primary"
-            android:textSize="17sp"
-            android:visibility="gone" />
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/due"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/chip_bg"
-            android:fontFamily="sans-serif-medium"
-            android:paddingStart="12dp"
-            android:paddingTop="5dp"
-            android:paddingEnd="12dp"
-            android:paddingBottom="5dp"
-            android:textColor="@color/chip_text"
-            android:textSize="13sp"
-            android:visibility="gone" />
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:maxLines="3"
+                android:textColor="@color/text_primary"
+                android:textSize="19sp"
+                android:visibility="gone" />
 
+            <TextView
+                android:id="@+id/due"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/chip_bg"
+                android:fontFamily="sans-serif-medium"
+                android:paddingStart="12dp"
+                android:paddingTop="5dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="5dp"
+                android:textColor="@color/chip_text"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
+            <!-- Only for text shared in from another app, or with auto-save off. -->
+            <TextView
+                android:id="@+id/save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/pill_bg"
+                android:fontFamily="sans-serif-medium"
+                android:paddingStart="22dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="22dp"
+                android:paddingBottom="8dp"
+                android:text="@string/save"
+                android:textColor="@color/on_accent"
+                android:textSize="14sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Hints and errors ("Didn't catch that") under the visual. -->
         <TextView
             android:id="@+id/status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_gravity="bottom|center_horizontal"
             android:gravity="center"
             android:textColor="@color/text_secondary"
             android:textSize="13sp"
             android:visibility="gone" />
-
-        <!-- Only when auto-save is off or text was shared in. -->
-        <TextView
-            android:id="@+id/save"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:background="@drawable/pill_bg"
-            android:fontFamily="sans-serif-medium"
-            android:paddingStart="22dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="22dp"
-            android:paddingBottom="8dp"
-            android:text="@string/save"
-            android:textColor="@color/on_accent"
-            android:textSize="14sp"
-            android:visibility="gone" />
-    </LinearLayout>
+    </FrameLayout>
 </FrameLayout>
