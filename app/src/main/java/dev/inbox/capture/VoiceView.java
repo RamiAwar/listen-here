@@ -16,7 +16,7 @@ public class VoiceView extends View {
 
     enum Mode { IDLE, LISTENING, THINKING, DONE }
 
-    private static final int BARS = 21;
+    private static final int BARS = 11;
     private static final long MORPH_MS = 650;
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -65,8 +65,8 @@ public class VoiceView extends View {
         double t = now / 1000.0;
         float w = getWidth(), h = getHeight();
         float slot = w / BARS;
-        float bar = slot * 0.5f;
-        float dot = bar * 2.2f;
+        float bar = slot * 0.62f;
+        float dot = w * 0.052f;
         float cx = w / 2f, cy = h / 2f;
         float m = morph(now);
 

@@ -145,13 +145,13 @@ public class CaptureActivity extends Activity {
     }
 
     /** Shows the outcome in the card for a moment, then closes. */
-    /** End screen: just the result and a caption, long enough to read. Tap to close sooner. */
-    private void done(int message) {
+    /** End screen: just the result, long enough to read. Tap to close sooner. */
+    private void done() {
         card.setOnClickListener(v -> finish());
         card.setOnLongClickListener(null);
         saveButton.setVisibility(View.GONE);
         hideWave();
-        setStatus(getString(message));
+        setStatus(null);
         status.postDelayed(this::finish, 3300);
     }
 
@@ -173,9 +173,14 @@ public class CaptureActivity extends Activity {
         wave.setAlpha(1);
         wave.setScaleX(1);
         wave.setScaleY(1);
-        wave.setMode(VoiceView.Mode.LISTENING);
+        wave.setMode(VoiceView.Mode.IDLE); // bars come up once the mic is actually live
         setStatus(null); // the bars say it
         recorder.start(new SpeechRecorder.Listener() {
+            @Override
+            public void onReady() {
+                wave.setMode(VoiceView.Mode.LISTENING);
+            }
+
             @Override
             public void onLevel(float level) {
                 wave.setLevel(level);
@@ -271,7 +276,7 @@ public class CaptureActivity extends Activity {
                 Toast.makeText(this, getString(R.string.save_failed, e.getMessage()), Toast.LENGTH_LONG).show();
                 return;
             }
-            done(R.string.queued);
+            done();
             return;
         }
         // Anything still waiting from the lock screen goes along in the same append.
@@ -284,6 +289,6 @@ public class CaptureActivity extends Activity {
             Toast.makeText(this, getString(R.string.save_failed, e.getMessage()), Toast.LENGTH_LONG).show();
             return;
         }
-        done(R.string.saved);
+        done();
     }
 }

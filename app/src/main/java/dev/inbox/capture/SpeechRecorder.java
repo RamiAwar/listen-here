@@ -18,6 +18,9 @@ final class SpeechRecorder {
         /** 0 = background noise, 1 = clearly talking. */
         void onLevel(float level);
 
+        /** The mic is delivering audio: the moment to start talking. */
+        void onReady();
+
         /** @param heardSpeech false when nothing rose above the noise floor. */
         void onDone(float[] pcm, int samples, boolean heardSpeech);
 
@@ -28,6 +31,9 @@ final class SpeechRecorder {
     private static final int MAX_SECONDS = 30;  // one Whistle pass
     private static final int END_SILENCE_MS = 1500; // room for a breath, not a long think
     private static final int GIVE_UP_MS = 8000; // nothing said at all
+    // Silence around the clip: speech models garble a first word that starts at the very first sample.
+    private static final int LEAD_PAD = RATE / 2;
+    private static final int TAIL_PAD = RATE * 3 / 10;
 
     private final Handler main = new Handler(Looper.getMainLooper());
     private volatile boolean stopRequested;
@@ -66,17 +72,19 @@ final class SpeechRecorder {
             return;
         }
 
-        float[] all = new float[RATE * MAX_SECONDS];
+        float[] all = new float[LEAD_PAD + RATE * MAX_SECONDS + TAIL_PAD];
+        int end = all.length - TAIL_PAD;
         float[] chunk = new float[RATE / 20]; // 50 ms: smooth enough for the waveform
-        int n = 0, silentMs = 0, speechMs = 0, totalMs = 0;
+        int n = LEAD_PAD, silentMs = 0, speechMs = 0, totalMs = 0;
         float noise = -1, peakRms = 0;
         boolean heard = false;
 
         rec.startRecording();
         try {
-            while (!stopRequested && n < all.length) {
-                int r = rec.read(chunk, 0, Math.min(chunk.length, all.length - n), AudioRecord.READ_BLOCKING);
+            while (!stopRequested && n < end) {
+                int r = rec.read(chunk, 0, Math.min(chunk.length, end - n), AudioRecord.READ_BLOCKING);
                 if (r <= 0) break;
+                if (n == LEAD_PAD) main.post(l::onReady);
                 System.arraycopy(chunk, 0, all, n, r);
                 n += r;
 
@@ -110,7 +118,7 @@ final class SpeechRecorder {
             rec.stop();
             rec.release();
         }
-        int samples = n;
+        int samples = n + TAIL_PAD; // the buffer is zeroed, so the tail is already silence
         boolean heardSpeech = heard;
         float gain = normalize(all, samples);
         android.util.Log.i("Inbox", "recorded " + samples + " samples, heard=" + heard + " noise=" + noise
