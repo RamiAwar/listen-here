@@ -148,7 +148,7 @@ public class CaptureActivity extends Activity {
         card.setEnabled(false);
         saveButton.setVisibility(View.GONE);
         wave.setMode(VoiceView.Mode.DONE);
-        status.setText(message);
+        setStatus(getString(message));
         status.postDelayed(this::finish, 1100);
     }
 
@@ -159,7 +159,7 @@ public class CaptureActivity extends Activity {
         }
         if (recorder.isRecording()) return;
         wave.setMode(VoiceView.Mode.LISTENING);
-        status.setText(""); // the bars say it
+        setStatus(null); // the bars say it
         recorder.start(new SpeechRecorder.Listener() {
             @Override
             public void onLevel(float level) {
@@ -170,10 +170,10 @@ public class CaptureActivity extends Activity {
             public void onDone(float[] pcm, int samples, boolean heardSpeech) {
                 showIdle();
                 if (!heardSpeech || isFinishing()) {
-                    status.setText(R.string.heard_nothing);
+                    setStatus(getString(R.string.heard_nothing));
                     return;
                 }
-                status.setText("");
+                setStatus(null);
                 wave.setMode(VoiceView.Mode.THINKING);
                 Whistle.transcribe(CaptureActivity.this, pcm, samples, prefs.language(), prefs.keywords(),
                         new Whistle.Callback() {
@@ -186,7 +186,7 @@ public class CaptureActivity extends Activity {
                             @Override
                             public void onError(String message) {
                                 wave.setMode(VoiceView.Mode.IDLE);
-                                status.setText(getString(R.string.speech_failed, message));
+                                setStatus(getString(R.string.speech_failed, message));
                             }
                         });
             }
@@ -194,7 +194,7 @@ public class CaptureActivity extends Activity {
             @Override
             public void onError(String message) {
                 showIdle();
-                status.setText(getString(R.string.speech_failed, message));
+                setStatus(getString(R.string.speech_failed, message));
             }
         });
     }
@@ -202,12 +202,18 @@ public class CaptureActivity extends Activity {
     private void onHeard(String heard) {
         if (isFinishing()) return;
         if (heard.isEmpty()) {
-            status.setText(R.string.no_words);
+            setStatus(getString(R.string.no_words));
             return;
         }
-        status.setText("");
+        setStatus(null);
         setText(text.isEmpty() ? heard : text + " " + heard);
         if (prefs.autoSave()) save();
+    }
+
+    /** Hidden when empty, so the card's contents stay truly centred. */
+    private void setStatus(String text) {
+        status.setText(text);
+        status.setVisibility(text == null || text.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
     private void showIdle() {
@@ -220,7 +226,7 @@ public class CaptureActivity extends Activity {
         if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) {
             listen();
         } else {
-            status.setText(R.string.mic_denied);
+            setStatus(getString(R.string.mic_denied));
         }
     }
 
