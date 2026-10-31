@@ -179,7 +179,6 @@ public class CaptureActivity extends Activity {
                         new Whistle.Callback() {
                             @Override
                             public void onText(String text) {
-                                wave.setMode(VoiceView.Mode.IDLE);
                                 onHeard(text);
                             }
 
@@ -202,10 +201,12 @@ public class CaptureActivity extends Activity {
     private void onHeard(String heard) {
         if (isFinishing()) return;
         if (heard.isEmpty()) {
+            wave.setMode(VoiceView.Mode.IDLE); // dots slide back out into the row
             setStatus(getString(R.string.no_words));
             return;
         }
         setStatus(null);
+        wave.setMode(VoiceView.Mode.DONE); // dots come to rest under the result
         setText(text.isEmpty() ? heard : text + " " + heard);
         if (prefs.autoSave()) save();
     }

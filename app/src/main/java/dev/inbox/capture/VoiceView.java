@@ -9,21 +9,27 @@ import android.view.View;
 
 /**
  * The capture card's only visual: a row of bars.
- * Listening, they rise and fall with your voice; thinking, they hand over to three hopping dots;
- * otherwise they rest as dots.
+ * Listening, they rise and fall with your voice. Thinking, they slide together into three dots
+ * that hop like a "typing…" indicator. Done, the dots come to rest.
  */
 public class VoiceView extends View {
 
     enum Mode { IDLE, LISTENING, THINKING, DONE }
 
     private static final int BARS = 21;
+    private static final long MORPH_MS = 650;
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final float[] shown = new float[BARS];
     private Mode mode = Mode.IDLE;
     private float targetLevel;
     private float level;
-    private float dotsMix; // 0 = bars, 1 = the three thinking dots
+    private float hop; // eases in while thinking, out when done
+
+    // Bars -> dots morph, driven by time so its speed doesn't depend on the frame rate.
+    private float morphFrom;
+    private float morphTo;
+    private long morphStart;
 
     public VoiceView(Context c, AttributeSet attrs) {
         super(c, attrs);
@@ -38,24 +44,38 @@ public class VoiceView extends View {
     public void setMode(Mode mode) {
         this.mode = mode;
         if (mode != Mode.LISTENING) targetLevel = 0;
+        float to = mode == Mode.THINKING || mode == Mode.DONE ? 1 : 0;
+        if (to != morphTo) {
+            morphFrom = morph(SystemClock.uptimeMillis());
+            morphTo = to;
+            morphStart = SystemClock.uptimeMillis();
+        }
         postInvalidateOnAnimation();
+    }
+
+    private float morph(long now) {
+        float p = Math.min(1f, (now - morphStart) / (float) MORPH_MS);
+        float eased = p < 0.5f ? 4 * p * p * p : 1 - (float) Math.pow(-2 * p + 2, 3) / 2; // ease in-out
+        return morphFrom + (morphTo - morphFrom) * eased;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
+        long now = SystemClock.uptimeMillis();
+        double t = now / 1000.0;
         float w = getWidth(), h = getHeight();
         float slot = w / BARS;
         float bar = slot * 0.5f;
-        float cy = h / 2f;
-        double t = SystemClock.uptimeMillis() / 1000.0;
+        float dot = bar * 2.2f;
+        float cx = w / 2f, cy = h / 2f;
+        float m = morph(now);
 
         // Rise quickly with the voice, fall back gently.
         level += (targetLevel - level) * (targetLevel > level ? 0.45f : 0.12f);
+        hop += ((mode == Mode.THINKING ? 1 : 0) - hop) * 0.12f;
 
-        boolean thinking = mode == Mode.THINKING;
-        dotsMix += ((thinking ? 1 : 0) - dotsMix) * 0.15f;
-        boolean moving = mode == Mode.LISTENING || thinking || Math.abs((thinking ? 1 : 0) - dotsMix) > 0.005f;
-        paint.setAlpha((int) (255 * (1 - dotsMix)));
+        boolean moving = mode == Mode.LISTENING || mode == Mode.THINKING
+                || now - morphStart < MORPH_MS || hop > 0.005f;
         for (int i = 0; i < BARS; i++) {
             // Middle bars reach highest, so the row reads as one shape.
             float envelope = (float) Math.pow(Math.sin(Math.PI * (i + 0.5) / BARS), 0.8);
@@ -66,21 +86,22 @@ public class VoiceView extends View {
             }
             shown[i] += (goal - shown[i]) * 0.3f;
             if (Math.abs(goal - shown[i]) > 0.003f) moving = true;
-            float bh = Math.max(bar, shown[i] * h);
-            float x = i * slot + (slot - bar) / 2f;
-            canvas.drawRoundRect(x, cy - bh / 2f, x + bar, cy + bh / 2f, bar / 2f, bar / 2f, paint);
+
+            // Each bar belongs to one of three dots and slides into it, shrinking as it goes.
+            int k = i * 3 / BARS;
+            float dotX = cx + (k - 1) * dot * 2.2f;
+            float dotY = cy - (float) Math.max(0, Math.sin(t * 6 - k * 0.9)) * dot * 1.2f * hop;
+            float x = lerp(i * slot + slot / 2f, dotX, m);
+            float y = lerp(cy, dotY, m);
+            float bw = lerp(bar, dot, m);
+            float bh = lerp(Math.max(bar, shown[i] * h), dot, m);
+            float r = Math.min(bw, bh) / 2f;
+            canvas.drawRoundRect(x - bw / 2f, y - bh / 2f, x + bw / 2f, y + bh / 2f, r, r, paint);
         }
-        if (dotsMix > 0.01f) drawDots(canvas, t, bar * 2.2f);
         if (moving) postInvalidateOnAnimation();
     }
 
-    /** Three dots hopping one after another, like a "typing…" indicator. */
-    private void drawDots(Canvas canvas, double t, float size) {
-        float cx = getWidth() / 2f, cy = getHeight() / 2f;
-        paint.setAlpha((int) (255 * dotsMix));
-        for (int i = 0; i < 3; i++) {
-            float hop = (float) Math.max(0, Math.sin(t * 6 - i * 0.9)) * size * 1.2f;
-            canvas.drawCircle(cx + (i - 1) * size * 2.2f, cy - hop, size / 2f, paint);
-        }
+    private static float lerp(float a, float b, float p) {
+        return a + (b - a) * p;
     }
 }
