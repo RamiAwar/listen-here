@@ -30,4 +30,4 @@ Listen Here turns speech into a line in your Obsidian vault. What it protects:
 - **Prebuilt engine (`full` build only).** `libneedle.a` (Cactus Compute, Apache-2.0) is a binary without published source. We have checked that it imports no networking functions. The missing `INTERNET` permission is the enforced boundary. The `fdroid` build contains no prebuilt code.
 - **Exported capture activity.** Another app in the foreground can open the capture card, and with the default settings that starts the microphone. Android shows the mic indicator, and the transcript goes only to your vault; the other app never receives it. Turn off "Start listening as soon as it opens" if this matters to you.
 - **Physical access.** Anyone holding your locked phone can add tasks to your queue. They can't read the queue or your vault.
-- **Release signing.** `assembleRelease` signs with the local debug key for convenience. Sign published builds with your own key.
+- **Release signing.** `assembleFullRelease` signs with the local debug key for convenience; sign GitHub releases with your own key. `assembleFdroidRelease` is unsigned, because F-Droid signs it.
