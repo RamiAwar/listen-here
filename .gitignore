@@ -7,3 +7,4 @@ local.properties
 # Fetched by scripts/fetch-whistle.sh
 app/src/main/cpp/needle/
 app/src/full/assets/whistle.cact
+dist/

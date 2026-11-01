@@ -2,6 +2,12 @@ plugins {
     id "com.android.application"
 }
 
+// Your release key lives outside the repo (see scripts/release.sh). Without it, builds still work:
+// `full` falls back to the debug key, and `fdroid` is always unsigned for F-Droid to verify.
+def signing = new Properties()
+def signingFile = file(System.getenv("LISTENHERE_SIGNING") ?: "${System.getProperty("user.home")}/keys/listen-here-release.properties")
+if (signingFile.exists()) signingFile.withInputStream { signing.load(it) }
+
 android {
     namespace "io.github.ramiawar.listenhere"
     compileSdk 35
@@ -17,15 +23,24 @@ android {
         ndk { abiFilters "arm64-v8a" }
     }
 
+    signingConfigs {
+        if (!signing.isEmpty()) {
+            release {
+                storeFile file(signing.storeFile)
+                storePassword signing.storePassword
+                keyAlias signing.keyAlias
+                keyPassword signing.keyPassword
+            }
+        }
+    }
+
     // full: bundles Cactus Whistle (prebuilt engine), plus Whisper models you import.
     // fdroid: everything built from source; Whisper only.
     flavorDimensions += "dist"
     productFlavors {
         full {
             dimension "dist"
-            // Debug-signed so a local `assembleFullRelease` installs directly; sign GitHub
-            // releases with your own key. The fdroid build stays unsigned: F-Droid signs it.
-            signingConfig signingConfigs.debug
+            signingConfig signing.isEmpty() ? signingConfigs.debug : signingConfigs.release
             externalNativeBuild { cmake { arguments "-DWITH_WHISTLE=ON" } }
         }
         fdroid {
