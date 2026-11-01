@@ -35,6 +35,10 @@ target_link_libraries(listenhere_jni whisper m)
 target_compile_options(listenhere_jni PRIVATE -O3)
 # No build ID: it hashes the unstripped binary (debug info included), which would differ by build folder.
 target_link_options(listenhere_jni PRIVATE -Wl,--gc-sections -Wl,--exclude-libs,ALL -Wl,--build-id=none)
+# .comment holds the compiler/linker identification, which includes the path the NDK itself was
+# built at, and that differs between the NDK's Linux and macOS packages. Android ignores it.
+add_custom_command(TARGET listenhere_jni POST_BUILD
+        COMMAND ${CMAKE_OBJCOPY} --remove-section=.comment $<TARGET_FILE:listenhere_jni>)
 
 if (WITH_WHISTLE)
     add_library(needle STATIC IMPORTED)

@@ -1,0 +1,1 @@
+First release: say a task and it lands in your Obsidian inbox with its date. Speech runs on your phone with a Whisper model you choose. Works from the lock screen. No internet permission.
