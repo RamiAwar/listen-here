@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Inbox</string>
+    <string name="app_name">Listen Here</string>
     <string name="tile_label">Capture task</string>
-    <string name="settings">Inbox settings</string>
+    <string name="settings">Listen Here settings</string>
     <string name="save">Save</string>
     <string name="save_failed">Couldn\'t save: %1$s</string>
     <string name="setup_first">Point the app at your vault first</string>

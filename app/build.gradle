@@ -3,12 +3,12 @@ plugins {
 }
 
 android {
-    namespace "dev.inbox.capture"
+    namespace "io.github.ramiawar.listenhere"
     compileSdk 35
     ndkVersion "29.0.14206865"
 
     defaultConfig {
-        applicationId "dev.inbox.capture"
+        applicationId "io.github.ramiawar.listenhere"
         minSdk 29
         targetSdk 35
         versionCode 1

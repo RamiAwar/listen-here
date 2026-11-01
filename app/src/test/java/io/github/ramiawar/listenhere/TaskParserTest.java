@@ -1,4 +1,4 @@
-package dev.inbox.capture;
+package io.github.ramiawar.listenhere;
 
 import static org.junit.Assert.assertEquals;
 

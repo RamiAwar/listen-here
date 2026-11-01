@@ -1,4 +1,4 @@
-package dev.inbox.capture;
+package io.github.ramiawar.listenhere;
 
 import android.app.Activity;
 import android.os.Bundle;

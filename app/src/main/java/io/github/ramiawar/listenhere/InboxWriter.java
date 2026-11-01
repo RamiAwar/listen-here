@@ -1,4 +1,4 @@
-package dev.inbox.capture;
+package io.github.ramiawar.listenhere;
 
 import android.content.ContentResolver;
 import android.content.Context;

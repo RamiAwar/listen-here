@@ -1,4 +1,4 @@
-package dev.inbox.capture;
+package io.github.ramiawar.listenhere;
 
 import android.Manifest;
 import android.app.Activity;
@@ -26,7 +26,7 @@ import java.util.Locale;
 public class CaptureActivity extends Activity {
 
     /** Launcher shortcut. Settings itself isn't exported, so this is the only way in from outside. */
-    static final String ACTION_SETTINGS = "dev.inbox.capture.SETTINGS";
+    static final String ACTION_SETTINGS = "io.github.ramiawar.listenhere.SETTINGS";
     /** Shared text: enough for a handful of tasks, small enough that nothing hides behind "+N more". */
     static final int MAX_SHARED_LINES = 10;
     static final int MAX_SHARED_CHARS = 2000;

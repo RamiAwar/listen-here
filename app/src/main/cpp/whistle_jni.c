@@ -12,7 +12,7 @@ static jstring error(JNIEnv *env) {
 
 /* Returns null on success, else the engine's error. The buffer must stay alive for the process. */
 JNIEXPORT jstring JNICALL
-Java_dev_inbox_capture_Whistle_nativeLoad(JNIEnv *env, jclass cls, jobject buf) {
+Java_io_github_ramiawar_listenhere_Whistle_nativeLoad(JNIEnv *env, jclass cls, jobject buf) {
     const unsigned char *p = (*env)->GetDirectBufferAddress(env, buf);
     jlong n = (*env)->GetDirectBufferCapacity(env, buf);
     if (!p || n <= 0) return (*env)->NewStringUTF(env, "model buffer is not direct");
@@ -22,7 +22,7 @@ Java_dev_inbox_capture_Whistle_nativeLoad(JNIEnv *env, jclass cls, jobject buf) 
 /* Returns the engine's JSON ({"text":..,"language":..}) as UTF-8 bytes, or throws IllegalStateException.
    Bytes, not a jstring: NewStringUTF wants modified UTF-8 and aborts on 4-byte sequences (emoji). */
 JNIEXPORT jbyteArray JNICALL
-Java_dev_inbox_capture_Whistle_nativeTranscribe(JNIEnv *env, jclass cls, jfloatArray pcm,
+Java_io_github_ramiawar_listenhere_Whistle_nativeTranscribe(JNIEnv *env, jclass cls, jfloatArray pcm,
                                                 jint samples, jstring language, jstring keywords) {
     const char *lang = language ? (*env)->GetStringUTFChars(env, language, NULL) : NULL;
     const char *kw = keywords ? (*env)->GetStringUTFChars(env, keywords, NULL) : NULL;

@@ -11,7 +11,7 @@ Everything happens on the phone. The app has **no internet permission**: speech 
 ## How it works
 
 - **Speech to text**: [Cactus Whistle](https://huggingface.co/Cactus-Compute/whistle) is bundled in the app. It's a 17 MB model that handles en/nl/de/fr/es/it/pl. The app records you itself and stops when you stop talking.
-- **Parsing**: rule-based and on-device ([`TaskParser`](app/src/main/java/dev/inbox/capture/TaskParser.java)). It strips filler like "remind me to" and "add a task to", and it understands dictated dates and times:
+- **Parsing**: rule-based and on-device ([`TaskParser`](app/src/main/java/io/github/ramiawar/listenhere/TaskParser.java)). It strips filler like "remind me to" and "add a task to", and it understands dictated dates and times:
   - `tomorrow`, `tonight`, `this weekend`, `end of the month`
   - `by friday`, `next tuesday`, `in two weeks`, `in twenty minutes`
   - `November fifth`, `the twelfth of December`, `by the twenty-first`

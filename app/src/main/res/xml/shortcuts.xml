@@ -5,8 +5,8 @@
         android:shortcutId="settings"
         android:shortcutShortLabel="@string/settings">
         <intent
-            android:action="dev.inbox.capture.SETTINGS"
-            android:targetClass="dev.inbox.capture.CaptureActivity"
-            android:targetPackage="dev.inbox.capture" />
+            android:action="io.github.ramiawar.listenhere.SETTINGS"
+            android:targetClass="io.github.ramiawar.listenhere.CaptureActivity"
+            android:targetPackage="io.github.ramiawar.listenhere" />
     </shortcut>
 </shortcuts>
