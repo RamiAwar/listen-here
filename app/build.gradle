@@ -23,6 +23,9 @@ android {
     productFlavors {
         full {
             dimension "dist"
+            // Debug-signed so a local `assembleFullRelease` installs directly; sign GitHub
+            // releases with your own key. The fdroid build stays unsigned: F-Droid signs it.
+            signingConfig signingConfigs.debug
             externalNativeBuild { cmake { arguments "-DWITH_WHISTLE=ON" } }
         }
         fdroid {
@@ -42,9 +45,6 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt")
-            // Signed with the debug key so `./gradlew assembleRelease` gives an installable APK.
-            // Swap in your own keystore if you publish it.
-            signingConfig signingConfigs.debug
         }
     }
 

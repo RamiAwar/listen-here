@@ -1,0 +1,1 @@
+First release: voice capture to your Obsidian inbox, Whisper models you choose, lock-screen queue.

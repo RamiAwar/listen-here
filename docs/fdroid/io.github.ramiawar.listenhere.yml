@@ -1,0 +1,30 @@
+# Draft recipe for https://gitlab.com/fdroid/fdroiddata (metadata/io.github.ramiawar.listenhere.yml).
+# The fdroid flavor is built entirely from source: whisper.cpp comes in as a git submodule,
+# and no model is bundled (users import one; the app has no INTERNET permission).
+Categories:
+  - Writing
+  - Time
+License: GPL-3.0-only
+AuthorName: Rami Awar
+SourceCode: https://github.com/RamiAwar/listen-here
+IssueTracker: https://github.com/RamiAwar/listen-here/issues
+
+AutoName: Listen Here
+
+RepoType: git
+Repo: https://github.com/RamiAwar/listen-here.git
+
+Builds:
+  - versionName: 0.3.0
+    versionCode: 1
+    commit: v0.3.0
+    subdir: app
+    submodules: true
+    gradle:
+      - fdroid
+    ndk: 29.0.14206865
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: 0.3.0
+CurrentVersionCode: 1

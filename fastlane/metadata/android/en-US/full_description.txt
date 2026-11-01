@@ -1,0 +1,16 @@
+Listen Here is a voice inbox for Obsidian. Hold the power button (or tap the Quick Settings tile), say the task, and it is appended to your inbox note as a checkbox with its date:
+
+"call the dentist tomorrow at three thirty pm" → - [ ] Call the dentist (@2026-11-01 15:30)
+
+<b>Private by design</b>
+<ul>
+<li>No internet permission: nothing you say can leave the phone.</li>
+<li>Speech recognition runs on the device with whisper.cpp. You choose the model; it downloads in your browser and is checked against a known SHA-256 when you import it.</li>
+<li>Works from the lock screen: tasks wait in a queue and are filed in one go after you unlock.</li>
+</ul>
+
+<b>Understands how you talk</b>
+Dates and times are picked out of what you say: "tomorrow", "by Friday", "next Tuesday", "in two weeks", "November fifth", "at half past four". Filler like "remind me to" is dropped.
+
+<b>Fits your vault</b>
+The line format is configurable. The default matches the Obsidian Reminder plugin; switch it to the Tasks plugin's 📅 format or anything else. Tasks go through Obsidian's own URI, so sync plugins pick them up immediately.

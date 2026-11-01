@@ -10,7 +10,9 @@ Everything happens on the phone. The app has **no internet permission**: speech 
 
 ## How it works
 
-- **Speech to text**: [Cactus Whistle](https://huggingface.co/Cactus-Compute/whistle) is bundled in the app. It's a 17 MB model that handles en/nl/de/fr/es/it/pl. The app records you itself and stops when you stop talking.
+- **Speech to text**: on-device, with the model you choose in settings. The app records you itself and stops when you stop talking.
+  - **Whisper** ([whisper.cpp](https://github.com/ggml-org/whisper.cpp), built from source): tiny, base or small, English-only or multilingual, 32–190 MB. A model downloads in your browser; you import the file and the app keeps it only if its SHA-256 matches the pinned catalog ([`Models`](app/src/main/java/io/github/ramiawar/listenhere/Models.java)). The app itself never goes online.
+  - **Cactus Whistle** ([model](https://huggingface.co/Cactus-Compute/whistle)): 17 MB, en/nl/de/fr/es/it/pl, bundled in the GitHub build. Its engine is prebuilt, so the F-Droid build leaves it out.
 - **Parsing**: rule-based and on-device ([`TaskParser`](app/src/main/java/io/github/ramiawar/listenhere/TaskParser.java)). It strips filler like "remind me to" and "add a task to", and it understands dictated dates and times:
   - `tomorrow`, `tonight`, `this weekend`, `end of the month`
   - `by friday`, `next tuesday`, `in two weeks`, `in twenty minutes`
@@ -31,19 +33,34 @@ Everything happens on the phone. The app has **no internet permission**: speech 
 - **Corner swipe** (gesture navigation; not available on the lock screen).
 - **Share** text from any app. Each line becomes one task.
 
-## Build
+## Builds
+
+| Flavor | Speech | Where |
+|---|---|---|
+| `fdroid` | Whisper only. Everything is built from source, and no model is bundled. | F-Droid |
+| `full` | Whisper, plus Cactus Whistle bundled so it works out of the box. | GitHub releases, IzzyOnDroid |
 
 ```sh
-./scripts/fetch-whistle.sh          # engine + model at pinned revisions, SHA-256 checked
+git clone --recurse-submodules https://github.com/RamiAwar/listen-here.git
 echo "sdk.dir=$ANDROID_HOME" > local.properties
-./gradlew testDebugUnitTest assembleRelease
-adb install app/build/outputs/apk/release/app-release.apk
+./gradlew testFdroidDebugUnitTest assembleFdroidRelease   # unsigned; F-Droid signs it
+
+./scripts/fetch-whistle.sh                                 # full only: Whistle at pinned revisions, SHA-256 checked
+./gradlew assembleFullRelease                              # debug-signed for local installs
+adb install app/build/outputs/apk/full/release/app-full-release.apk
 ```
 
-You need the Android SDK 35, NDK 29.0.14206865 and CMake 3.22. The build targets arm64 only, which the speech engine requires.
+You need the Android SDK 35, NDK 29.0.14206865 and CMake 3.22. The build targets arm64 with ARMv8.2 (any phone from about 2018 on). Sign GitHub releases with your own key.
 
-The release build is signed with the debug key so it installs directly. Use your own key if you publish it.
+## F-Droid
+
+Store metadata lives in [`fastlane/metadata`](fastlane/metadata/android/en-US). The draft recipe for [fdroiddata](https://gitlab.com/fdroid/fdroiddata) is in [`docs/fdroid`](docs/fdroid/io.github.ramiawar.listenhere.yml). It builds the `fdroid` flavor from a `vX.Y.Z` tag, with submodules.
+
+## License
+
+GPL-3.0. See [LICENSE](LICENSE).
 
 ## Third-party
 
-The Whistle model and the Needle engine (`libneedle.a`) are © Cactus Compute and licensed Apache-2.0. The engine ships as a prebuilt static library. It imports only memory, math, threading and file functions, with no networking, and the app has no internet permission.
+- [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT) is built from source. Whisper models are © OpenAI, MIT-licensed.
+- The Whistle model and the Needle engine (`libneedle.a`) are © Cactus Compute, Apache-2.0, and are in the `full` build only. The engine ships as a prebuilt static library. It imports only memory, math, threading and file functions, with no networking, and the app has no internet permission.
