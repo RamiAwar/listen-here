@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.22)
 project(listenhere C CXX)
 
+# Reproducible builds: keep the checkout path out of the binary (ggml asserts embed __FILE__),
+# so a build in any folder (yours, F-Droid's) produces identical bytes.
+get_filename_component(REPO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../../.." ABSOLUTE)
+string(APPEND CMAKE_C_FLAGS " -ffile-prefix-map=${REPO_ROOT}=.")
+string(APPEND CMAKE_CXX_FLAGS " -ffile-prefix-map=${REPO_ROOT}=.")
+
 # The GitHub build also bundles Cactus Whistle, a prebuilt engine F-Droid can't ship.
 option(WITH_WHISTLE "Link the prebuilt Cactus Whistle engine" OFF)
 
