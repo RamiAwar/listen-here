@@ -18,6 +18,7 @@ final class Prefs {
     static final String AUTO_MIC = "auto_mic";
     static final String LANGUAGE = "language";
     static final String KEYWORDS = "keywords";
+    static final String MODEL = "model";
 
     /** Whistle's languages; "" lets it detect. */
     static final String[] LANGUAGES = {"en", "nl", "de", "fr", "es", "it", "pl", ""};
@@ -39,6 +40,7 @@ final class Prefs {
     boolean autoMic() { return sp.getBoolean(AUTO_MIC, true); }
     String languageSetting() { return sp.getString(LANGUAGE, "en"); }
     String language() { return languageSetting().isEmpty() ? null : languageSetting(); }
+    String model() { return sp.getString(MODEL, Bundled.AVAILABLE ? Models.WHISTLE : ""); }
     String keywordsSetting() { return sp.getString(KEYWORDS, ""); }
     String keywords() { return keywordsSetting().trim().isEmpty() ? null : keywordsSetting().trim(); }
 

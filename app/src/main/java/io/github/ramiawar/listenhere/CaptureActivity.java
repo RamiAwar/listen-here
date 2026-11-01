@@ -52,8 +52,10 @@ public class CaptureActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         prefs = new Prefs(this);
-        if (!prefs.configured()) {
-            Toast.makeText(this, R.string.setup_first, Toast.LENGTH_LONG).show();
+        // Shared text needs no speech model; dictation does.
+        boolean sharing = Intent.ACTION_SEND.equals(getIntent().getAction());
+        if (!prefs.configured() || (!sharing && !Speech.ready(this, prefs))) {
+            Toast.makeText(this, prefs.configured() ? R.string.no_model : R.string.setup_first, Toast.LENGTH_LONG).show();
             startActivity(new Intent(this, SettingsActivity.class));
             finish();
             return;
@@ -82,7 +84,7 @@ public class CaptureActivity extends Activity {
         saveButton = findViewById(R.id.save);
         saveButton.setOnClickListener(v -> save());
 
-        Whistle.preload(this);
+        Speech.preload(this, prefs);
         if (state == null) start(getIntent());
     }
 
@@ -268,8 +270,8 @@ public class CaptureActivity extends Activity {
                 }
                 setStatus(null);
                 wave.setMode(VoiceView.Mode.THINKING);
-                Whistle.transcribe(CaptureActivity.this, pcm, samples, prefs.language(), prefs.keywords(),
-                        new Whistle.Callback() {
+                Speech.transcribe(CaptureActivity.this, prefs, pcm, samples,
+                        new Speech.Callback() {
                             @Override
                             public void onText(String text) {
                                 onHeard(text);

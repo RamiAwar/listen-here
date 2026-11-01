@@ -6,4 +6,4 @@ local.properties
 .idea/
 # Fetched by scripts/fetch-whistle.sh
 app/src/main/cpp/needle/
-app/src/main/assets/whistle.cact
+app/src/full/assets/whistle.cact

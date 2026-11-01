@@ -96,6 +96,23 @@
             android:layout_marginTop="8dp"
             android:text="Save right after dictation (no confirm tap)" />
 
+        <TextView style="@style/Label" android:text="@string/model_heading" />
+        <RadioGroup
+            android:id="@+id/models"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/import_model"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/import_model" />
+
+        <TextView
+            android:id="@+id/model_status"
+            style="@style/Label"
+            android:text="@string/model_help" />
+
         <TextView style="@style/Label" android:text="Speech language" />
         <Spinner
             android:id="@+id/language"
@@ -113,7 +130,7 @@
 
         <TextView
             style="@style/Label"
-            android:text="Speech runs on the phone (Cactus Whistle). The app has no internet permission." />
+            android:text="Speech runs on the phone. The app has no internet permission." />
 
         <Button
             android:id="@+id/done"

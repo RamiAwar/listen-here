@@ -1,6 +1,7 @@
 #!/bin/sh
 # Downloads the Whistle speech engine and model (Apache-2.0, Cactus Compute) at pinned
-# revisions and checks them against known hashes. Run once before building.
+# revisions and checks them against known hashes. Needed for the `full` build only;
+# the `fdroid` build is entirely from source.
 set -eu
 cd "$(dirname "$0")/.."
 
@@ -20,5 +21,5 @@ fetch "$HF/needle3/resolve/$NEEDLE_REV/android-arm64/libneedle.a" app/src/main/c
     7aa6de6132a22bf45f5e903425feb66f159ad46f47fa558921bc4fd02c3a2fa0
 fetch "$HF/needle3/resolve/$NEEDLE_REV/android-arm64/needle.h" app/src/main/cpp/needle/needle.h \
     a27dac4b3239eead91d124b7f7dbce5495c13019903fd817b68c16d39b055a99
-fetch "$HF/whistle/resolve/$WHISTLE_REV/whistle.cact" app/src/main/assets/whistle.cact \
+fetch "$HF/whistle/resolve/$WHISTLE_REV/whistle.cact" app/src/full/assets/whistle.cact \
     b6e02f048568ac5d01a2042556c658061e699acbc0aa2a1439f52f3d461dffeb
