@@ -2,8 +2,9 @@
 # The fdroid flavor is built entirely from source: whisper.cpp comes in as a git submodule,
 # and no model is bundled (users import one; the app has no INTERNET permission).
 Categories:
-  - Writing
-  - Time
+  - Task
+  - Note
+  - Speech Recognizer
 License: GPL-3.0-only
 AuthorName: Rami Awar
 SourceCode: https://github.com/RamiAwar/listen-here
@@ -20,6 +21,11 @@ Builds:
     commit: v0.3.0
     subdir: app
     submodules: true
+    # whisper.cpp's test models and its example/binding apps aren't part of our build.
+    scandelete:
+      - third_party/whisper.cpp/models
+      - third_party/whisper.cpp/examples
+      - third_party/whisper.cpp/bindings
     gradle:
       - fdroid
     ndk: 29.0.14206865
